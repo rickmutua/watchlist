@@ -3,6 +3,7 @@ from config import config_options
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 
+
 bootstrap = Bootstrap()
 
 db = SQLAlchemy()
@@ -26,6 +27,17 @@ def create_app(config_name):
     # setting up configurations
     from .request import configure_request
     configure_request(app)
+
+    # registering the auth blueprint
+    from .auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint, url_prefix = '/authenticate')
+
+    # setting up flask login
+    from flask_login import LoginManager
+    login_manager = LoginManager()
+    login_manager.session_protection = 'strong'
+    login_manager.login_view = 'auth.login'
+
 
     return app
 
