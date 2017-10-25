@@ -9,6 +9,7 @@ class ReviewForm(FlaskForm):
     review = TextAreaField('Movie review', validators=[Required()])
     submit = SubmitField('Submit')
 
+
 class UpdateProfile(FlaskForm):
 
     bio = TextAreaField('Tell people about you', validators=[Required()])
