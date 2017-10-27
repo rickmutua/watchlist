@@ -5,8 +5,11 @@ from .forms import ReviewForm, UpdateProfile
 from ..models import Review, User
 from ..request import get_movies, get_movie, search_movie
 
-from flask_login import login_required
+from flask_login import login_required, current_user
+
 from .. import db, photos
+
+import markdown2
 
 
 @main.route('/')
@@ -70,7 +73,8 @@ def new_review(id):
         title = form.title.data
         review = form.review.data
 
-        new_review = Review(movie.id, title, movie.image, review)
+        new_review = Review(movie_id=movie.id, movie_title=title, image_path=movie.poster, movie_review=review,
+                            user=current_user)
         new_review.save_review()
         return redirect(url_for('.movie', id=movie.id))
 
@@ -78,8 +82,31 @@ def new_review(id):
     return render_template('new_review.html', title=title, review_form=form, movie=movie)
 
 
-@main.route('/user/<uname>')
+@main.route('/reviews/<int:id>')
+def movie_reviews(id):
 
+    movie = get_movie(id)
+
+    reviews = Review.get_reviews(id)
+    title = f'All reviews for {movie.title}'
+
+    return render_template('movie_reviews.html',title = title,reviews=reviews)
+
+
+@main.route('/review/<int:id>')
+def single_review(id):
+
+    review=Review.query.get(id)
+
+    if review is None:
+        abort(404)
+
+    format_review = markdown2.markdown(review.movie_review,extras=["code-friendly", "fenced-code-blocks"])
+
+    return render_template('review.html',review = review,format_review=format_review)
+
+
+@main.route('/user/<uname>')
 def profile(uname):
     user = User.query.filter_by(username = uname).first()
 
@@ -90,7 +117,6 @@ def profile(uname):
 
 
 @main.route('/user/<uname>/update',methods = ['GET','POST'])
-
 @login_required
 def update_profile(uname):
     user = User.query.filter_by(username = uname).first()

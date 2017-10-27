@@ -2,4 +2,5 @@ virtual/
 .pyc
 instance/
 /start.sh
-
+/config.py
+tests/__pycache__/
